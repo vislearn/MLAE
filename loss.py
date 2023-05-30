@@ -1,0 +1,9 @@
+...
+
+
+def surrogate(x, encode, decode, hutchinson_samples):
+    ...
+
+
+def loss(x, encode, decode, beta, hutchinson_samples):
+    ...
