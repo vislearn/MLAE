@@ -28,27 +28,31 @@ import torch
 from torch.autograd import grad
 from torch.autograd.forward_ad import dual_level, make_dual, unpack_dual
 
-SurrogateOutput = namedtuple("SurrogateOutput", ["z", "x1", "nll", "volume_change"])
+SurrogateOutput = namedtuple("SurrogateOutput", ["z", "x1", "nll", "s"])
 Transform = Callable[[torch.Tensor], torch.Tensor]
 
 
 def sample_v(x: torch.Tensor, hutchinson_samples: int):
     """
-    Sample a random vector v of shape (batch_size, x.shape[1], hutchinson_samples)
-    with orthonormal columns.
+    Sample a random vector v of shape (x.shape[0], x.shape[1], hutchinson_samples)
+    with scaled orthonormal columns.
 
-    :param x: Input data. Shape: (batch_size, ...)
+    The reference data is used for shape, device and dtype.
+
+    :param x: Reference data. Shape: (x.shape[0], x.shape[1])
     :param hutchinson_samples: Number of Hutchinson samples to draw.
     :return:
     """
     if hutchinson_samples > x.shape[-1]:
         raise ValueError(f"Too many Hutchinson samples: got {hutchinson_samples}, expected <= {x.shape[-1]}")
+    if len(x.shape) != 2:
+        raise ValueError(f"Input must be a vector, got shape {x.shape}")
     v = torch.randn(*x.shape, hutchinson_samples, device=x.device, dtype=x.dtype)
     q = torch.linalg.qr(v).Q
     return q * sqrt(x.shape[-1])
 
 
-def ml_surrogate(x: torch.Tensor, encode: Transform, decode: Transform,
+def nll_surrogate(x: torch.Tensor, encode: Transform, decode: Transform,
                  hutchinson_samples: int = 1) -> SurrogateOutput:
     """
     Compute the per-sample surrogate for the negative log-likelihood and the volume change estimator.
@@ -68,22 +72,22 @@ def ml_surrogate(x: torch.Tensor, encode: Transform, decode: Transform,
     for k in range(hutchinson_samples):
         v = vs[..., k]
 
-        # $ Jd v $ via forward-mode AD
+        # $ g'(z) v $ via forward-mode AD
         with dual_level():
             dual_z = make_dual(z, v)
             dual_x1 = decode(dual_z)
             x1, v1 = unpack_dual(dual_x1)
 
-        # $ v^T Je $ via backward-mode AD
+        # $ v^T f'(x) $ via backward-mode AD
         v2, = grad(z, x, v, create_graph=True)
 
-        # $ v^T Je stop_grad(Jd) v $
+        # $ v^T f'(x) stop_grad(g'(z)) v $
         s += torch.sum(v2 * v1.detach(), -1) / hutchinson_samples
 
     # Per-sample negative log-likelihood
-    ml = (z ** 2) / 2 - s
+    nll = (z ** 2) / 2 - s
 
-    return SurrogateOutput(z, x1, ml, s)
+    return SurrogateOutput(z, x1, nll, s)
 
 
 def mlae_loss(x: torch.Tensor,
@@ -93,9 +97,9 @@ def mlae_loss(x: torch.Tensor,
     """
     Compute the per-sample MLAE loss:
     $$
-    \mathcal{L} = \beta ||x - decode(encode(x))||^2 + ||encode(x)||^2 // 2 - \sum_{k=1}^K v_k^T Je stop_grad(Jd) v_k
+    \mathcal{L} = \beta ||x - decode(encode(x))||^2 + ||encode(x)||^2 // 2 - \sum_{k=1}^K v_k^T f'(x) stop_grad(g'(z)) v_k
     $$
-    where $E[v_k^T v_k] = 1$, and $Je$ and $Jd$ are the Jacobians of `encode` and `decode`.
+    where $E[v_k^T v_k] = 1$, and $ f'(x) $ and $ g'(z) $ are the Jacobians of `encode` and `decode`.
 
     :param x: Input data. Shape: (batch_size, ...)
     :param encode: Encoder function. Takes `x` as input and returns a latent representation of shape (batch_size, latent_dim).
@@ -104,6 +108,6 @@ def mlae_loss(x: torch.Tensor,
     :param hutchinson_samples: Number of Hutchinson samples to use for the volume change estimator.
     :return: Per-sample loss. Shape: (batch_size,)
     """
-    surrogate = ml_surrogate(x, encode, decode, hutchinson_samples)
+    surrogate = nll_surrogate(x, encode, decode, hutchinson_samples)
     mse = (x - surrogate.x1) ** 2
     return beta * mse + surrogate.nll
