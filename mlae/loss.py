@@ -11,6 +11,14 @@ Transform = Callable[[torch.Tensor], torch.Tensor]
 
 
 def sample_v(x: torch.Tensor, hutchinson_samples: int):
+    """
+    Sample a random vector v of shape (batch_size, x.shape[1], hutchinson_samples)
+    with orthonormal columns.
+
+    :param x: Input data. Shape: (batch_size, ...)
+    :param hutchinson_samples: Number of Hutchinson samples to draw.
+    :return:
+    """
     if hutchinson_samples > x.shape[-1]:
         raise ValueError(f"Too many Hutchinson samples: got {hutchinson_samples}, expected <= {x.shape[-1]}")
     v = torch.randn(*x.shape, hutchinson_samples, device=x.device, dtype=x.dtype)
@@ -24,11 +32,11 @@ def ml_surrogate(x: torch.Tensor, encode: Transform, decode: Transform,
     Compute the per-sample surrogate for the negative log-likelihood and the volume change estimator.
     The gradient of the surrogate is the gradient of the actual negative log-likelihood.
 
-    :param x:
-    :param encode:
-    :param decode:
-    :param hutchinson_samples:
-    :return:
+    :param x: Input data. Shape: (batch_size, ...)
+    :param encode: Encoder function. Takes `x` as input and returns a latent representation of shape (batch_size, latent_dim).
+    :param decode: Decoder function. Takes a latent representation of shape (batch_size, latent_dim) as input and returns a reconstruction of shape (batch_size, ...).
+    :param hutchinson_samples: Number of Hutchinson samples to use for the volume change estimator.
+    :return: Per-sample loss. Shape: (batch_size,)
     """
     x.requires_grad_()
     z = encode(x)
@@ -66,11 +74,11 @@ def mlae_loss(x: torch.Tensor,
     $$
     where $E[v_k^T v_k] = 1$, and $Je$ and $Jd$ are the Jacobians of `encode` and `decode`.
 
-    :param x:
-    :param encode:
-    :param decode:
-    :param beta:
-    :param hutchinson_samples:
+    :param x: Input data. Shape: (batch_size, ...)
+    :param encode: Encoder function. Takes `x` as input and returns a latent representation of shape (batch_size, latent_dim).
+    :param decode: Decoder function. Takes a latent representation of shape (batch_size, latent_dim) as input and returns a reconstruction of shape (batch_size, ...).
+    :param beta: Weight of the mean squared error.
+    :param hutchinson_samples: Number of Hutchinson samples to use for the volume change estimator.
     :return: Per-sample loss. Shape: (batch_size,)
     """
     surrogate = ml_surrogate(x, encode, decode, hutchinson_samples)
