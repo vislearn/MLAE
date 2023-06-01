@@ -85,14 +85,14 @@ def nll_surrogate(x: torch.Tensor, encode: Transform, decode: Transform,
         surrogate += torch.sum(v2 * v1.detach(), -1) / hutchinson_samples
 
     # Per-sample negative log-likelihood
-    nll = (z ** 2) / 2 - surrogate
+    nll = torch.sum((z ** 2), -1) / 2 - surrogate
 
     return SurrogateOutput(z, x1, nll, surrogate)
 
 
 def mlae_loss(x: torch.Tensor,
               encode: Transform, decode: Transform,
-              beta: Union[float | torch.Tensor],
+              beta: Union[float, torch.Tensor],
               hutchinson_samples: int = 1) -> torch.Tensor:
     """
     Compute the per-sample MLAE loss:
@@ -109,5 +109,5 @@ def mlae_loss(x: torch.Tensor,
     :return: Per-sample loss. Shape: (batch_size,)
     """
     surrogate = nll_surrogate(x, encode, decode, hutchinson_samples)
-    mse = (x - surrogate.x1) ** 2
-    return beta * mse + surrogate.nll
+    mse = torch.sum((x - surrogate.x1) ** 2, dim=tuple(range(1, len(x.shape))))
+    return beta * mse.mean() + surrogate.nll.mean()
