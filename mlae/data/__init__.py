@@ -13,7 +13,7 @@ def load_dataset(name: str, **kwargs) -> TrainValTest:
     if name in ["miniboone", "gas", "hepmass", "power"]:
         from .tabular import get_tabular_datasets
         # note that the given train/val/test split is ignored and a fixed split is performed
-        return get_tabular_datasets(name=name, data_root='data')
+        return get_tabular_datasets(name=name, **kwargs)
     elif name == "mnist":
         return get_mnist_datasets(**kwargs)
     elif name == "cifar10":

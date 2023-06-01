@@ -1,12 +1,16 @@
-model: rectangular_flows.model.RectangularFlow
+model: mlae.model.RectangularFlow
 
 data_set:
   name: sine
   root: .
 
-noise: 0.1
+noise: 0.1  # This is varied
 
 lr_scheduler: "onecyclelr"
+
+loss_weights:
+  nll: 1
+  noisy_reconstruction: 10  # This is varied in the paper
 
 batch_size: 128
 optimizer:

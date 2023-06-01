@@ -160,8 +160,8 @@ def get_raw_tabular_datasets(name, data_root):
     return data_fn(data_root)
 
 
-def get_tabular_datasets(name, data_root):
-    train_raw, valid_raw, test_raw = get_raw_tabular_datasets(name, data_root)
+def get_tabular_datasets(name, root):
+    train_raw, valid_raw, test_raw = get_raw_tabular_datasets(name, root)
 
     train_dset = TensorDataset(torch.tensor(train_raw, dtype=torch.get_default_dtype()))
     valid_dset = TensorDataset(torch.tensor(valid_raw, dtype=torch.get_default_dtype()))

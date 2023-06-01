@@ -1,0 +1,33 @@
+model: mlae.model.MaximumLikelihoodAutoencoder
+
+data_set:
+  # name: ... must be specified in separate config file
+  root: .
+
+noise: 0.01
+# max_epochs: ... must be specified in separate config file
+
+loss_weights:
+  nll: 1
+  noisy_reconstruction: 10
+
+models:
+  - name: mlae.model.AutoEncoder
+    # latent_dim: ... must be specified in separate config file
+    layer_spec: [ 256, 256 ]
+  - name: mlae.model.ResNet
+    # latent_dim: ... must be specified in separate config file
+    layers_spec:
+      - [ 256, 256 ]
+      - [ 256, 256 ]
+
+lr_scheduler: "onecyclelr"
+
+batch_size: 512
+optimizer:
+  name: adam
+  lr: 0.0003
+  weight_decay: 0.0001
+
+accelerator: "cpu"
+num_workers: 0
