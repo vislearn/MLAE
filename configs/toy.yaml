@@ -1,0 +1,18 @@
+model: rectangular_flows.model.RectangularFlow
+
+data_set:
+  name: sine
+  root: .
+
+noise: 0.1
+
+lr_scheduler: "onecyclelr"
+
+batch_size: 128
+optimizer:
+  name: adam
+  lr: 0.001
+max_epochs: 50
+
+accelerator: "cpu"
+num_workers: 0
