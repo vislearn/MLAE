@@ -28,7 +28,7 @@ import torch
 from torch.autograd import grad
 from torch.autograd.forward_ad import dual_level, make_dual, unpack_dual
 
-SurrogateOutput = namedtuple("SurrogateOutput", ["z", "x1", "nll", "s"])
+SurrogateOutput = namedtuple("SurrogateOutput", ["z", "x1", "nll", "surrogate"])
 Transform = Callable[[torch.Tensor], torch.Tensor]
 
 
@@ -67,7 +67,7 @@ def nll_surrogate(x: torch.Tensor, encode: Transform, decode: Transform,
     x.requires_grad_()
     z = encode(x)
 
-    s = 0
+    surrogate = 0
     vs = sample_v(z, hutchinson_samples)
     for k in range(hutchinson_samples):
         v = vs[..., k]
@@ -82,12 +82,12 @@ def nll_surrogate(x: torch.Tensor, encode: Transform, decode: Transform,
         v2, = grad(z, x, v, create_graph=True)
 
         # $ v^T f'(x) stop_grad(g'(z)) v $
-        s += torch.sum(v2 * v1.detach(), -1) / hutchinson_samples
+        surrogate += torch.sum(v2 * v1.detach(), -1) / hutchinson_samples
 
     # Per-sample negative log-likelihood
-    nll = (z ** 2) / 2 - s
+    nll = (z ** 2) / 2 - surrogate
 
-    return SurrogateOutput(z, x1, nll, s)
+    return SurrogateOutput(z, x1, nll, surrogate)
 
 
 def mlae_loss(x: torch.Tensor,
