@@ -1,0 +1,29 @@
+model: mlae.model.RectangularFlow
+
+noise: 0.01
+data_set:
+  kind: mnist
+  root: .
+
+loss_weights:
+  nll: 1
+  noisy_reconstruction: 10
+max_epochs: 2000
+
+models:
+  - name: mlae.model.ConvAutoEncoder
+    ch_factor: 32
+    latent_dim: 16
+  - name: mlae.model.ResNet
+    latent_dim: 16
+    layers_spec:
+      - [512, 512]
+      - [512, 512]
+      - [512, 512]
+      - [512, 512]
+
+optimizer:
+  name: adam
+  lr: 0.001
+
+batch_size: 512
