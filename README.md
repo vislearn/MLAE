@@ -96,3 +96,20 @@ import mlae
 If you do not want to add our `mlae` package as a dependency,
 you can also copy the `mlae/loss.py` file into your own project.
 It only depends on `torch`.
+
+## Reproduce our experiments
+
+To reproduce an experiment in the paper, you can use the following config files.
+For some experiments, parameters are varied. You can do so by adding the parameters to the command line:
+
+```bash
+python -m lightning_trainable.launcher.fit config_files ... param=value ... --name '{data_set[kind]},{models[0][latent_dim]}'
+```
+
+| Experiment        | Config files                                        | Extra parameters                                            |
+|-------------------|-----------------------------------------------------|-------------------------------------------------------------|
+| Toy data          | `configs/toy.yaml`                                  | `loss_weights.noisy_reconstruction=…` (optional: `noise=…`) |
+| Tabular           | `configs/tabular.yaml configs/tabular-….yaml`       |                                                             |
+| Conditional MNIST | `configs/mnist.yaml configs/mnist-conditional.yaml` | `loss_weights.noisy_reconstruction=…`                       |
+| MNIST             | `configs/mnist.yaml`                                |                                                             |
+| CelebA            | `configs/celeba.yaml`                               |                                                             |
