@@ -12,10 +12,10 @@ max_epochs: 2000
 
 models:
   - name: mlae.model.ConvAutoEncoder
+    latent_dim: &latent_dim 16
     ch_factor: 32
-    latent_dim: 16
   - name: mlae.model.ResNet
-    latent_dim: 16
+    latent_dim: *latent_dim
     layers_spec:
       - [512, 512]
       - [512, 512]
