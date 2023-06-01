@@ -110,4 +110,4 @@ def mlae_loss(x: torch.Tensor,
     """
     surrogate = nll_surrogate(x, encode, decode, hutchinson_samples)
     mse = torch.sum((x - surrogate.x1) ** 2, dim=tuple(range(1, len(x.shape))))
-    return beta * mse.mean() + surrogate.nll.mean()
+    return beta * mse + surrogate.nll
