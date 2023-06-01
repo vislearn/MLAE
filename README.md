@@ -1,5 +1,7 @@
 # Maximum Likelihood Training of Autoencoders
 
+This is the official `PyTorch` implementation of our preprint:
+
 ```bibtex
 @article{sorrenson2023maximum,
     title = {Maximum Likelihood Training of Autoencoders},
@@ -10,6 +12,8 @@
 ```
 
 ## Basic usage
+
+### Train your architecture 
 
 ```python
 
@@ -38,6 +42,39 @@ for epoch in range(n_epochs):
         optim.step()
 ```
 
+### Build models based on our framework
+
+If you want to build your models based on our framework, you need to install
+`lightning_trainable` from their [GitHub repo](https://github.com/LarsKue/lightning-trainable)
+via `pip`.
+This will automatically install the required dependencies, including PyTorch-Lightning.
+
+This will create a new directory `lightning_logs/mnist,16/`. You can trace the run via `tensorboard`:
+```bash
+tensorboard --logdir lightning_logs
+```
+
+When training has finished, you can import the model via
+```python
+import mlae
+
+model = mlae.model.MaximumLikelihoodAutoencoder.load_from_checkpoint(
+    'lightning_logs/mnist,16/version_0/checkpoints/last.ckpt'
+)
+```
+
+You can train all our models via the `lightning_trainable.launcher.fit` module.
+For example, to train our MNIST model:
+```bash
+python -m lightning_trainable.launcher.fit configs/mnist.yaml --name '{data_set[kind]},{models[0][latent_dim]}'
+```
+
+If you want to overwrite the default parameters, you can add them after the config file:
+```bash
+python -m lightning_trainable.launcher.fit configs/mnist.yaml batch_size=128 loss_weights.noisy_reconstruction=20 --name '{data_set[kind]},{models[0][latent_dim]}'
+```
+
+
 ## Installation
 
 ### Install via pip
@@ -59,8 +96,3 @@ import mlae
 If you do not want to add our `mlae` package as a dependency,
 you can also copy the `mlae/loss.py` file into your own project.
 It only depends on `torch`.
-
-## Reproducing the experiments
-
-This section is work in progress. We will add the full code
-to reproduce the experiments in the paper soon.
