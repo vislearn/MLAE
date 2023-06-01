@@ -1,14 +1,16 @@
 from collections import namedtuple
 from math import sqrt
+from typing import Union, Callable
 
 import torch
 from torch.autograd import grad
 from torch.autograd.forward_ad import dual_level, make_dual, unpack_dual
 
 SurrogateOutput = namedtuple("SurrogateOutput", ["z", "x1", "nll", "volume_change"])
+Transform = Callable[[torch.Tensor], torch.Tensor]
 
 
-def sample_v(x, hutchinson_samples):
+def sample_v(x: torch.Tensor, hutchinson_samples: int):
     if hutchinson_samples > x.shape[-1]:
         raise ValueError(f"Too many Hutchinson samples: got {hutchinson_samples}, expected <= {x.shape[-1]}")
     v = torch.randn(*x.shape, hutchinson_samples, device=x.device, dtype=x.dtype)
@@ -16,7 +18,8 @@ def sample_v(x, hutchinson_samples):
     return q * sqrt(x.shape[-1])
 
 
-def ml_surrogate(x, encode, decode, hutchinson_samples) -> SurrogateOutput:
+def ml_surrogate(x: torch.Tensor, encode: Transform, decode: Transform,
+                 hutchinson_samples: int) -> SurrogateOutput:
     """
     Compute the per-sample surrogate for the negative log-likelihood and the volume change estimator.
     The gradient of the surrogate is the gradient of the actual negative log-likelihood.
@@ -53,7 +56,9 @@ def ml_surrogate(x, encode, decode, hutchinson_samples) -> SurrogateOutput:
     return SurrogateOutput(z, x1, ml, s)
 
 
-def mlae_loss(x, encode, decode, beta, hutchinson_samples) -> torch.Tensor:
+def mlae_loss(x: torch.Tensor,
+              encode: Transform, decode: Transform,
+              beta: Union[float | torch.Tensor], hutchinson_samples: int) -> torch.Tensor:
     """
     Compute the per-sample MLAE loss:
     $$
