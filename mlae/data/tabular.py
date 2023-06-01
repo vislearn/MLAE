@@ -6,6 +6,8 @@ import pandas
 import h5py
 from torch.utils.data import TensorDataset
 
+from mlae.data.utils import TrainValTest
+
 # download tabular data with the command (run from the repo main directory):
 # mkdir -p data/ && wget -O - https://zenodo.org/record/1161203/files/data.tar.gz | tar --strip-components=1 -C data/ -xvzf - data/{gas,hepmass,miniboone,power}
 
@@ -160,7 +162,7 @@ def get_raw_tabular_datasets(name, data_root):
     return data_fn(data_root)
 
 
-def get_tabular_datasets(name, root):
+def get_tabular_datasets(name, root) -> TrainValTest:
     train_raw, valid_raw, test_raw = get_raw_tabular_datasets(name, root)
 
     train_dset = TensorDataset(torch.tensor(train_raw, dtype=torch.get_default_dtype()))

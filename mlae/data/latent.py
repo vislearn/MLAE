@@ -3,6 +3,7 @@ from importlib import import_module
 import torch
 from torch.utils.data import TensorDataset
 
+from mlae.data.utils import TrainValTest
 
 class LatentDataset(TensorDataset):
     def __init__(self, model, base_dataset: TensorDataset):
@@ -14,7 +15,7 @@ class LatentDataset(TensorDataset):
 
 
 @torch.no_grad()
-def get_latent_datasets(checkpoint: str, model: str = "mlae.model.ConvAutoEncoder"):
+def get_latent_datasets(checkpoint: str, model: str = "mlae.model.ConvAutoEncoder") -> TrainValTest:
     module_name, model_name = model.rsplit(".", 1)
     module = import_module(module_name)
 

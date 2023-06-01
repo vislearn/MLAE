@@ -7,7 +7,7 @@ from sklearn.datasets import make_moons
 from torch.nn.functional import one_hot
 from torch.utils.data import TensorDataset
 
-from mlae.data import TrainValTest, get_latent_datasets
+from mlae.data.utils import TrainValTest
 
 
 def make_toy_data(kind: str, N_train=100_000, N_val=1_000, N_test=5_000, random_state=12479, center=True,
@@ -64,8 +64,6 @@ def make_toy_data(kind: str, N_train=100_000, N_val=1_000, N_test=5_000, random_
         data = torch.randn(N, dimension) * torch.linspace(.5, 1.5, dimension)[None]
         if center:
             raise ValueError(f"Do not use dataset {kind=!r} together with {center=!r}, use kind='normal instead.'")
-    elif kind == "latent" or kind == "mnist-latent":
-        return get_latent_datasets(**kwargs)
     else:
         raise ValueError(f"Dataset name {kind}")
 

@@ -8,11 +8,12 @@ from torchvision.datasets import MNIST, CIFAR10, CelebA
 from torchvision.transforms import ToTensor, Resize, Compose, CenterCrop
 from tqdm import tqdm
 
+from mlae.data.utils import TrainValTest
 
 CELEBA_CACHE = {}
 
 
-def get_mnist_datasets(root: str, digit: int = None, conditional: bool = False, **kwargs):
+def get_mnist_datasets(root: str, digit: int = None, conditional: bool = False, **kwargs) -> TrainValTest:
     try:
         train_dataset = MNIST(root, train=True)
         test_dataset = MNIST(root, train=False)
@@ -26,7 +27,7 @@ def get_mnist_datasets(root: str, digit: int = None, conditional: bool = False, 
     return _process_img_data(train_dataset, None, test_dataset, label=digit, conditional=conditional)
 
 
-def get_cifar10_datasets(root: str, label: int = None, conditional: bool = False):
+def get_cifar10_datasets(root: str, label: int = None, conditional: bool = False) -> TrainValTest:
     try:
         train_dataset = CIFAR10(root, train=True)
         test_dataset = CIFAR10(root, train=False)
@@ -40,7 +41,7 @@ def get_cifar10_datasets(root: str, label: int = None, conditional: bool = False
     return _process_img_data(train_dataset, None, test_dataset, label=label, conditional=conditional)
 
 
-def get_celeba_datasets(root: str, image_size: None | int = 64, load_to_memory: bool = False):
+def get_celeba_datasets(root: str, image_size: None | int = 64, load_to_memory: bool = False) -> TrainValTest:
     cache_key = (root, image_size, load_to_memory)
     if cache_key not in CELEBA_CACHE:
         if load_to_memory:

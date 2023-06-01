@@ -1,4 +1,4 @@
-model: mlae.model.RectangularFlow
+model: mlae.model.MaximumLikelihoodAutoencoder
 
 data_set:
   name: sine

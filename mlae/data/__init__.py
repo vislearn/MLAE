@@ -1,12 +1,9 @@
-from typing import Tuple
-
-import torch.utils.data
-
 from .latent import get_latent_datasets
 from .image import get_mnist_datasets, get_cifar10_datasets, get_celeba_datasets
 from .toy import make_toy_data
+from .utils import TrainValTest
 
-TrainValTest = Tuple[torch.utils.data.Dataset, torch.utils.data.Dataset, torch.utils.data.Dataset]
+__all__ = ["load_dataset"]
 
 
 def load_dataset(name: str, **kwargs) -> TrainValTest:
