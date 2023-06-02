@@ -13,7 +13,7 @@ from mlae.data.utils import TrainValTest
 CELEBA_CACHE = {}
 
 
-def get_mnist_datasets(root: str, digit: int = None, conditional: bool = False, **kwargs) -> TrainValTest:
+def get_mnist_datasets(root: str, digit: int = None, conditional: bool = False) -> TrainValTest:
     try:
         train_dataset = MNIST(root, train=True)
         test_dataset = MNIST(root, train=False)

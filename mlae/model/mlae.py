@@ -38,7 +38,7 @@ class MLAEHParams(TrainableHParams):
         name="surrogate",
         hutchinson_samples=1
     )
-    skip_val_nll: bool = False
+    skip_val_nll: bool | int = False
 
     noise: float | list = 0.0
     loss_weights: dict
@@ -114,8 +114,7 @@ class MaximumLikelihoodAutoencoder(Trainable):
         if not isinstance(hparams, MLAEHParams):
             hparams = MLAEHParams(**hparams)
 
-        data_device = "cuda" if hparams.accelerator == "gpu" else hparams.accelerator
-        train_data, val_data, test_data = load_dataset(**hparams.data_set, device=data_device)
+        train_data, val_data, test_data = load_dataset(**hparams.data_set)
 
         super().__init__(hparams, train_data=train_data, val_data=val_data, test_data=test_data)
 
@@ -239,14 +238,13 @@ class MaximumLikelihoodAutoencoder(Trainable):
             )
 
         # Empty until computed
-        z1 = x1 = z = None
+        x1 = z = None
 
         # Negative log-likelihood
-        tr = None
         if not self.training:
             if self.hparams.skip_val_nll is False or (
                     isinstance(self.hparams.skip_val_nll, int)
-                    and batch_idx <= self.hparams.skip_val_nll
+                    and batch_idx < self.hparams.skip_val_nll
             ):
                 z, x1, log_prob = self.log_prob(x=x, c=c)
                 loss_values["nll"] = -log_prob
@@ -384,7 +382,7 @@ class MaximumLikelihoodAutoencoder(Trainable):
 
         if not self.training and batch_idx == 0:
             # compute FID-like score for tabular data
-            if self.hparams.data_set["kind"] in ["miniboone", "gas", "hepmass", "power"]:
+            if self.hparams.data_set["name"] in ["miniboone", "gas", "hepmass", "power"]:
                 x_val = self.val_data.tensors[0].to(self.device)
                 z_sample = torch.randn(x_val.shape[0], self.latent_dim, device=self.device)
                 c1 = self.apply_conditions(z_sample).condition

@@ -6,6 +6,8 @@ data_set:
   root: .
   load_to_memory: true  # set to false if your RAM is not big enough
 
+skip_val_nll: 1 # Skip nll validation after first batch
+
 loss_weights:
   nll: 1
   noisy_reconstruction: 10

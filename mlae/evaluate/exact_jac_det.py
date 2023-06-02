@@ -47,7 +47,7 @@ def log_det_exact(x, encode, decode, *func_args,
     if jacobian_target == "encoder":
         jac, z = vmap(jacfn(double_output(encode), has_aux=True),
                       chunk_size=chunk_size)(x, *func_args, **func_kwargs)
-        x1 = decode(z)
+        x1 = decode(z, *func_args, **func_kwargs)
         factor = 1
     elif jacobian_target == "decoder":
         z = encode(x, *func_args, **func_kwargs)
