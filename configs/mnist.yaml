@@ -3,7 +3,7 @@ model: mlae.model.MaximumLikelihoodAutoencoder
 noise: 0.01
 data_set:
   name: mnist
-  root: .
+  root: data
 
 loss_weights:
   nll: 1

@@ -97,7 +97,7 @@ class MemoryCelebA:
 
 
 def celeba_to_memory(root: str, split: str, image_size: None | int) -> MemoryCelebA:
-    file_name = f"celeba_batches_{split}_{image_size}.pt"
+    file_name = f"{root}/celeba_batches_{split}_{image_size}.pt"
     try:
         batches = torch.load(file_name)
     except FileNotFoundError:

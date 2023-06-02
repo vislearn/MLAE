@@ -49,6 +49,12 @@ If you want to build your models based on our framework, you need to install
 via `pip`.
 This will automatically install the required dependencies, including PyTorch-Lightning.
 
+You can train now all our models via the `lightning_trainable.launcher.fit` module.
+For example, to train our MNIST model:
+```bash
+python -m lightning_trainable.launcher.fit configs/mnist.yaml --name '{data_set[kind]},{models[0][latent_dim]}'
+```
+
 This will create a new directory `lightning_logs/mnist,16/`. You can trace the run via `tensorboard`:
 ```bash
 tensorboard --logdir lightning_logs
@@ -61,12 +67,6 @@ import mlae
 model = mlae.model.MaximumLikelihoodAutoencoder.load_from_checkpoint(
     'lightning_logs/mnist,16/version_0/checkpoints/last.ckpt'
 )
-```
-
-You can train all our models via the `lightning_trainable.launcher.fit` module.
-For example, to train our MNIST model:
-```bash
-python -m lightning_trainable.launcher.fit configs/mnist.yaml --name '{data_set[kind]},{models[0][latent_dim]}'
 ```
 
 If you want to overwrite the default parameters, you can add them after the config file:

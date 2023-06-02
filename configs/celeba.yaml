@@ -3,7 +3,7 @@ model: mlae.model.MaximumLikelihoodAutoencoder
 noise: 0.01
 data_set:
   name: celeba
-  root: .
+  root: data
   load_to_memory: true  # set to false if your RAM is not big enough
 
 skip_val_nll: 1 # Skip nll validation after first batch

@@ -385,14 +385,14 @@ class MaximumLikelihoodAutoencoder(Trainable):
             if self.hparams.data_set["name"] in ["miniboone", "gas", "hepmass", "power"]:
                 x_val = self.val_data.tensors[0].to(self.device)
                 z_sample = torch.randn(x_val.shape[0], self.latent_dim, device=self.device)
-                c1 = self.apply_conditions(z_sample).condition
+                c1 = self.apply_conditions([z_sample]).condition
                 sample = self.decode(z_sample, c1)
                 metrics["fid_like_score"] = wasserstein2_distance_gaussian_approximation(sample, x_val)
 
         return metrics
 
     def on_train_epoch_end(self) -> None:
-        if self.data_dim > 2:
+        if self.data_dim > 2 and self.hparams.data_set["name"] in ["mnist", "cifar10", "celeba"]:
             with torch.no_grad():
                 n_row = 1 if self.is_conditional() else 10
                 for temperature in [.5, .8, 1.0, 1.2, 1.5]:
@@ -482,7 +482,7 @@ class MaximumLikelihoodAutoencoder(Trainable):
             c = torch.empty((x.shape[0], 0), device=x.device, dtype=x.dtype)
         else:
             c = torch.cat(conds, -1)
-        return x0, x, loss_weights, c
+        return ConditionedBatch(x0, x, loss_weights, c)
 
 
 def build_model(models, data_dim: int, cond_dim: int):
