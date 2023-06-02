@@ -2,7 +2,6 @@ model: mlae.model.MaximumLikelihoodAutoencoder
 
 data_set:
   name: sine
-  root: .
 
 noise: 0.1  # This is varied
 
@@ -11,6 +10,15 @@ lr_scheduler: "onecyclelr"
 loss_weights:
   nll: 1
   noisy_reconstruction: 10  # This is varied in the paper
+
+models:
+  - name: mlae.model.ResNet
+    latent_dim: 1
+    layers_spec:
+      - [256, 256]
+      - [256, 256]
+      - [256, 256]
+      - [256, 256]
 
 batch_size: 128
 optimizer:

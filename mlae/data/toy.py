@@ -19,21 +19,17 @@ def make_toy_data(kind: str, N_train=100_000, N_val=1_000, N_test=5_000, random_
         data, labels = make_moons(n_samples=N, random_state=random_state)
         if kwargs.pop("conditional", False):
             conditions.append(one_hot(torch.from_numpy(labels)))
-        assert kwargs == {}
         data = torch.Tensor(data)
     elif kind == "von-mises-circle":
-        assert kwargs == {}
         theta = vonmises.rvs(1, size=N, loc=np.pi / 2, random_state=random_state)
         x1 = np.cos(theta)
         x2 = np.sin(theta)
         data = torch.from_numpy(np.stack((x1, x2), 1)).float()
     elif kind == "sine":
-        assert kwargs == {}
         x1 = np.random.default_rng(random_state).normal(size=N)
         x2 = np.sin(x1 * np.pi / 2)
         data = torch.from_numpy(np.stack((x1, x2), 1)).float()
     elif kind == "corner":
-        assert kwargs == {}
         u = np.random.default_rng(random_state).uniform(size=N) * 3
         x1 = torch.where(
             u < 1,
@@ -56,16 +52,16 @@ def make_toy_data(kind: str, N_train=100_000, N_val=1_000, N_test=5_000, random_
         data = torch.from_numpy(np.stack((x1, x2), 1))
     elif kind == "normal":
         dimension = kwargs.pop("dimension")
-        assert kwargs == {}
         data = torch.zeros(N, dimension)
     elif kind == "linear-std":
         dimension = kwargs.pop("dimension")
-        assert kwargs == {}
         data = torch.randn(N, dimension) * torch.linspace(.5, 1.5, dimension)[None]
         if center:
             raise ValueError(f"Do not use dataset {kind=!r} together with {center=!r}, use kind='normal instead.'")
     else:
         raise ValueError(f"Dataset name {kind}")
+    if kwargs != {}:
+        raise ValueError(f"Found excess data_set {kwargs=}")
 
     perm = torch.randperm(data.size(0))
     data = data[perm]
