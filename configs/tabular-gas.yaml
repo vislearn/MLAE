@@ -1,5 +1,4 @@
-data_set:
-  name: gas
+data_set.name: gas
 
 max_epochs: 6
 

@@ -1,5 +1,4 @@
-data_set:
-  name: power
+data_set.name: power
 
 max_epochs: 3
 

@@ -1,5 +1,4 @@
-data_set:
-  name: hepmass
+data_set.name: hepmass
 
 max_epochs: 17
 

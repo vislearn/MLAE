@@ -2,7 +2,7 @@ model: mlae.model.MaximumLikelihoodAutoencoder
 
 noise: 0.01
 data_set:
-  kind: celeba
+  name: celeba
   root: .
   load_to_memory: true  # set to false if your RAM is not big enough
 

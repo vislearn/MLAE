@@ -1,4 +1,3 @@
-from .latent import get_latent_datasets
 from .image import get_mnist_datasets, get_cifar10_datasets, get_celeba_datasets
 from .toy import make_toy_data
 from .utils import TrainValTest
@@ -17,7 +16,5 @@ def load_dataset(name: str, **kwargs) -> TrainValTest:
         return get_cifar10_datasets(**kwargs)
     elif name == "celeba":
         return get_celeba_datasets(**kwargs)
-    elif name in ["latent", "mnist-latent"]:
-        return get_latent_datasets(name, **kwargs)
     else:
         return make_toy_data(name, **kwargs)
