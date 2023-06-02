@@ -1,5 +1,7 @@
 # Maximum Likelihood Training of Autoencoders
 
+![figs/mlae-overview.png](figs/mlae-overview.png)
+
 This is the official `PyTorch` implementation of our preprint:
 
 ```bibtex
@@ -16,7 +18,6 @@ This is the official `PyTorch` implementation of our preprint:
 ### Train your architecture 
 
 ```python
-
 import torch
 import mlae.loss as loss
 
@@ -52,7 +53,7 @@ This will automatically install the required dependencies, including PyTorch-Lig
 You can train now all our models via the `lightning_trainable.launcher.fit` module.
 For example, to train our MNIST model:
 ```bash
-python -m lightning_trainable.launcher.fit configs/mnist.yaml --name '{data_set[kind]},{models[0][latent_dim]}'
+python -m lightning_trainable.launcher.fit configs/mnist.yaml --name '{data_set[name]},{models[0][latent_dim]}'
 ```
 
 This will create a new directory `lightning_logs/mnist,16/`. You can trace the run via `tensorboard`:
@@ -69,9 +70,9 @@ model = mlae.model.MaximumLikelihoodAutoencoder.load_from_checkpoint(
 )
 ```
 
-If you want to overwrite the default parameters, you can add them after the config file:
+If you want to overwrite the default parameters, you can add `key=value`-pairs after the config file:
 ```bash
-python -m lightning_trainable.launcher.fit configs/mnist.yaml batch_size=128 loss_weights.noisy_reconstruction=20 --name '{data_set[kind]},{models[0][latent_dim]}'
+python -m lightning_trainable.launcher.fit configs/mnist.yaml batch_size=128 loss_weights.noisy_reconstruction=20 --name '{data_set[name]},{models[0][latent_dim]}'
 ```
 
 
@@ -94,16 +95,18 @@ import mlae
 ### Copy `mlae/loss.py` into your project
 
 If you do not want to add our `mlae` package as a dependency,
-you can also copy the `mlae/loss.py` file into your own project.
-It only depends on `torch`.
+but still want to use the MLAE loss function,
+you can copy the `mlae/loss.py` file into your own project.
+It only does not have any dependencies to the remaining repo.
 
 ## Reproduce our experiments
 
-To reproduce an experiment in the paper, you can use our provided config files.
-For some experiments, we vary parameters to demonstrate their effect. You can set them via `key=value` pairs:
+To reproduce an experiment in the paper, use the provided config files.
+For some experiments, we vary parameters to demonstrate their effect.
+You can set them via `key=value` pairs:
 
 ```bash
-python -m lightning_trainable.launcher.fit [config file(s)] [key=value pairs] --name '{data_set[kind]},{models[0][latent_dim]}'
+python -m lightning_trainable.launcher.fit [config file(s)] [key=value pairs] --name '{data_set[name]},{models[0][latent_dim]}'
 ```
 
 | Experiment        | Configuration specification                                                             |
