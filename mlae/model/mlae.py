@@ -249,7 +249,7 @@ class MaximumLikelihoodAutoencoder(Trainable):
                 z, x1, log_prob = self.log_prob(x=x, c=c)
                 loss_values["nll"] = -log_prob
             else:
-                loss_weights["nll"] = float("nan")
+                loss_weights["nll"] = 0
         elif check_keys("nll"):
             warm_up = self.hparams.warm_up_epochs
             if isinstance(warm_up, int):
