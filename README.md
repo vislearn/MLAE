@@ -13,6 +13,33 @@ This is the official `PyTorch` implementation of our preprint:
 }
 ```
 
+## Installation
+
+### Install via pip
+
+The following will install our package along with all of its dependencies:
+
+```bash
+git clone https://github.com/vislearn/MLAE.git
+cd MLAE
+pip install -r requirements.txt
+pip install .
+```
+
+Then you can import the package via
+
+```python
+import mlae
+```
+
+### Copy `mlae/loss.py` into your project
+
+If you do not want to add our `mlae` package as a dependency,
+but still want to use the MLAE loss function,
+you can copy the `mlae/loss.py` file into your own project.
+It does not have any dependencies on the rest of the repo.
+
+
 ## Basic usage
 
 ### Train your architecture 
@@ -45,18 +72,14 @@ for epoch in range(n_epochs):
 
 ### Build models based on our framework
 
-If you want to build your models based on our framework, you need to install
-`lightning_trainable` from their [GitHub repo](https://github.com/LarsKue/lightning-trainable)
-via `pip`.
-This will automatically install the required dependencies, including PyTorch-Lightning.
-
-You can train now all our models via the `lightning_trainable.launcher.fit` module.
+Our training framework is built on https://github.com/LarsKue/lightning-trainable. 
+You can train all our models via the `lightning_trainable.launcher.fit` module.
 For example, to train our MNIST model:
 ```bash
 python -m lightning_trainable.launcher.fit configs/mnist.yaml --name '{data_set[name]},{models[0][latent_dim]}'
 ```
 
-This will create a new directory `lightning_logs/mnist,16/`. You can trace the run via `tensorboard`:
+This will create a new directory `lightning_logs/mnist,16/`. You can monitor the run via `tensorboard`:
 ```bash
 tensorboard --logdir lightning_logs
 ```
@@ -75,29 +98,6 @@ If you want to overwrite the default parameters, you can add `key=value`-pairs a
 python -m lightning_trainable.launcher.fit configs/mnist.yaml batch_size=128 loss_weights.noisy_reconstruction=20 --name '{data_set[name]},{models[0][latent_dim]}'
 ```
 
-
-## Installation
-
-### Install via pip
-
-```bash
-git clone https://github.com/vislearn/mlae.git
-cd mlae
-pip install .
-```
-
-Then you can import the package via
-
-```python
-import mlae
-```
-
-### Copy `mlae/loss.py` into your project
-
-If you do not want to add our `mlae` package as a dependency,
-but still want to use the MLAE loss function,
-you can copy the `mlae/loss.py` file into your own project.
-It only does not have any dependencies to the remaining repo.
 
 ## Reproduce our experiments
 
