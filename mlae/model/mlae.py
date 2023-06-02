@@ -183,11 +183,14 @@ class MaximumLikelihoodAutoencoder(Trainable):
         config = deepcopy(self.hparams.log_det_estimator)
         estimator_name = config.pop("name")
 
+        if estimate:
+            kwargs.update(config)
+
         if estimator_name == "exact" or not estimate:
             out = log_det_exact(
-                x, self.encode, self.decode,
+                x, self.encode, self.decode, c,
                 chunk_size=self.hparams.exact_chunk_size,
-                **kwargs, c=c
+                **kwargs,
             )
             volume_change = out.log_det
         elif estimator_name == "surrogate":
@@ -195,7 +198,7 @@ class MaximumLikelihoodAutoencoder(Trainable):
                 x,
                 lambda _x: self.encode(_x, c),
                 lambda z: self.decode(z, c),
-                **config, **kwargs
+                **kwargs
             )
             volume_change = out.surrogate
         else:

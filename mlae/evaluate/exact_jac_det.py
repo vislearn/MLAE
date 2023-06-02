@@ -21,9 +21,9 @@ def double_output(fn):
 ExactOutput = namedtuple("ExactOutput", ["z", "x1", "nll", "log_det"])
 
 
-def log_det_exact(x, encode, decode,
+def log_det_exact(x, encode, decode, *func_args,
                   grad_type="backward", jacobian_target="encoder",
-                  chunk_size=None, allow_gradient=False, *func_args, **func_kwargs) -> ExactOutput:
+                  chunk_size=None, allow_gradient=False, **func_kwargs) -> ExactOutput:
     """
     Compute the exact log determinant of the Jacobian of the given encoder or decoder.
 
