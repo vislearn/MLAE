@@ -594,48 +594,106 @@ def plot_convex_hull(data_2d: torch.Tensor):
         plt.plot(data_2d[simplex, 0], data_2d[simplex, 1], "r-")
 
 
-def plot_singular_value_spectrum_comparison(
-    model_list: List,
-    label_list: List,
-    legend_title: Optional[str] = "Legend",
-    condition: Optional[Tensor] = None,
-    temperature: Optional[float] = 1,
-    n_samples: int = 128
-) -> None:
-    _, ax = plt.subplots(1, 1, figsize=(12, 6))
-    ls = ['-', '--', (0, (3, 1, 1, 1)), (0, (1, 10))]
-    colors = ["b", "g", "c", "y"]
+def compute_decoder_jacobian(model, z, conditions=None):
+    """
+    Compute the Jacobian of the decoder with respect to the input z.
+    Args:
+        model (nn.Module): A model with implemented decode() method.
+        z (Tensor): The input to the decode() method.
+        conditions (Tensor): The conditions to the decode() method.
+    Returns:
+        Tensor: The Jacobian of the decoder with respect to the input z.
+    """
+    jacobians = []
+    for condition in all_conditions(model, conditions):
+        if condition is None:
+            batch = (z,)
+        else:
+            batch = (z, repeat_condition(z, condition).to(z))
+        _, z_batch, _, c_batch = model.apply_conditions(batch)
+        jacobian = torch.vmap(lambda z, c: torch.func.jacfwd(model.decode)(z, c))(
+            z_batch, c_batch
+        )
+        jacobians.append(jacobian)
+    return torch.cat(jacobians, dim=0)
 
-    for i, (model, label) in enumerate(zip(model_list, label_list)):
-        model_spectrum = None
-        for condition in all_conditions(model, condition):
-            with torch.no_grad():
-                z_batch = torch.normal(
-                    mean=torch.zeros((n_samples, model.latent_dim)),
-                    std=temperature*torch.ones((n_samples, model.latent_dim))
-                )
-                c_batch = condition.unsqueeze(0).repeat(n_samples, 1)
-                jac_batch = torch.vmap(
-                    lambda z, c: torch.func.jacfwd(model.decode)(z, c)
-                )(z_batch, c_batch)
-                _, s, _ = torch.vmap(
-                    lambda jac: torch.linalg.svd(jac, full_matrices=False
-                ))(jac_batch)
-            if model_spectrum is None:
-                model_spectrum = s
-            else:
-                model_spectrum = torch.concatenate((model_spectrum, s), dim=0)
 
-        mean = model_spectrum.mean(dim=0)
-        std = model_spectrum.std(dim=0)
-        s_numeration = torch.arange(1, model.latent_dim+1)
-        ax.plot(s_numeration, mean, linestyle=ls[i % len(ls)],
-                color=colors[i % len(colors)], label=label)
-        ax.fill_between(s_numeration, mean-std, mean+std,
-                        color=colors[i % len(colors)], alpha=.2)
-        ax.set_xticks(s_numeration)
+def compute_decoder_jacobian_singular_values(model, z, conditions=None):
+    """
+    Compute the singular values of the Jacobian of the decoder with respect to the input z.
+    Args:
+        model (nn.Module): A model with implemented decode() method.
+        z (Tensor): The input to the decode() method.
+        conditions (Tensor): The conditions to the decode() method.
+    Returns:
+        Tensor: The singular values of the Jacobian of the decoder with respect to the input z.
+    """
+    jacobians = compute_decoder_jacobian(model, z, conditions)
+    return torch.vmap(
+        lambda jacobian: torch.linalg.svd(jacobian, full_matrices=False)[1]
+    )(jacobians)
 
-    ax.set_yscale("log")
-    ax.set_xlabel("#")
-    ax.set_ylabel(r"$\lambda$")
-    ax.legend(frameon=False, title=legend_title)
+
+def plot_decoder_singular_value_spectrum(model, n_samples, temperature, plt_kwargs={}):
+    """
+    Plot the singular value spectrum of the Jacobian of the decoder with respect to the input z.
+    Args:
+        model (nn.Module): A model with implemented decode() method.
+        n_samples (int): The number of samples to use for the estimation.
+        temperature (float): The temperature of the normal distribution used for sampling.
+        plt_kwargs (dict): Keyword arguments passed to plt.plot().
+    Returns:
+        None
+    """
+    z_batch = torch.normal(
+        torch.zeros(n_samples, model.latent_dim),
+        temperature * torch.ones(n_samples, model.latent_dim),
+    )
+    with torch.no_grad():
+        singular_value_spectra = compute_decoder_jacobian_singular_values(
+            model, z_batch
+        )
+
+    mean = singular_value_spectra.mean(dim=0)
+    std = singular_value_spectra.std(dim=0)
+    s_numeration = torch.arange(1, model.latent_dim + 1)
+    plt.plot(s_numeration, mean, **plt_kwargs)
+    plt.fill_between(s_numeration, mean - std, mean + std, alpha=0.2)
+    plt.xticks(s_numeration)
+
+
+def compute_decoder_singular_values_ge_one(model, n_samples, temperature):
+    """
+    Computes the interception of the singular value spectrum with the horizontal line at one.
+    Args:
+        model (nn.Module): A model with implemented decode() method.
+        n_samples (int): The number of samples to use for the estimation.
+        temperature (float): The temperature of the normal distribution used for sampling.
+    Returns:
+        int: Interception of the singular value spectrum with the horizontal line at one
+             rounded down to the nearest integer.
+        int: Interception of the singular value spectrum minus its standard deviation with
+             the horizontal line at one rounded down to the nearest integer.
+        int: Interception of the singular value spectrum plus its standard deviation with 
+             the horizontal line at one rounded down to the nearest integer.
+    """
+    z_batch = torch.normal(
+        torch.zeros(n_samples, model.latent_dim),
+        temperature * torch.ones(n_samples, model.latent_dim),
+    )
+    with torch.no_grad():
+        singular_value_spectra = compute_decoder_jacobian_singular_values(
+            model, z_batch
+        )
+
+    mean = singular_value_spectra.mean(dim=0)
+    std = singular_value_spectra.std(dim=0)
+    singular_values_ge_one_mean = torch.sum(mean >= 1)
+    singular_values_ge_one_mean_m_std = torch.sum((mean - std) >= 1)
+    singular_values_ge_one_mean_p_std = torch.sum((mean + std) >= 1)
+
+    return (
+        singular_values_ge_one_mean,
+        singular_values_ge_one_mean_m_std,
+        singular_values_ge_one_mean_p_std,
+    )
