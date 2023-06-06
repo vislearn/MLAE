@@ -2,13 +2,13 @@
 
 ![figs/mlae-overview.png](figs/mlae-overview.png)
 
-This is the official `PyTorch` implementation of our preprint:
+This is the official `PyTorch` implementation of [our preprint](http://arxiv.org/abs/2306.01843):
 
 ```bibtex
 @article{sorrenson2023maximum,
     title = {Maximum Likelihood Training of Autoencoders},
     author = {Sorrenson, Peter and Draxler, Felix and Rousselot, Armand and Hummerich, Sander and Zimmermann, Lea and Köthe, Ullrich},
-    journal = {arXiv preprint arXiv:2306.XXXXX},
+    journal = {arXiv preprint arXiv:2306.01843},
     year = {2023}
 }
 ```
