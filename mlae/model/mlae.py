@@ -486,6 +486,8 @@ class MaximumLikelihoodAutoencoder(Trainable):
 
 
 def build_model(models, data_dim: int, cond_dim: int):
+    if not isinstance(models[0], dict):
+        return Sequential(*models)
     models = deepcopy(models)
     model = Sequential()
     for model_spec in models:
