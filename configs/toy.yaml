@@ -1,7 +1,7 @@
 model: mlae.model.MaximumLikelihoodAutoencoder
 
-data_set:
-  name: sine
+accelerator: "cpu"
+num_workers: 0
 
 noise: 0.1  # This is varied
 
@@ -23,8 +23,5 @@ models:
 batch_size: 128
 optimizer:
   name: adam
-  lr: 0.001
-max_epochs: 50
-
-accelerator: "cpu"
-num_workers: 0
+  lr: 0.0001
+max_epochs: 5000

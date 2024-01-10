@@ -1,0 +1,3 @@
+log_det_estimator:
+  name: surrogate
+  hutchinson_samples: 1

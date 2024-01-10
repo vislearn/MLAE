@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
+from matplotlib.offsetbox import AnchoredText
 from torch.distributions import Normal
 from torch.utils.data import DataLoader
 
@@ -697,3 +698,28 @@ def compute_decoder_singular_values_ge_one(model, n_samples, temperature):
         singular_values_ge_one_mean_m_std,
         singular_values_ge_one_mean_p_std,
     )
+
+def scatter_filaments(model, eval_batch, normalize=True, text=None, text_loc=1, xlim=[-3.5,3.5], **kwargs):
+    z = model.encode(eval_batch, c=None)
+    x_rec = model.decode(z, c=None).detach().numpy()
+    z_np = z.detach().numpy()
+    x_np = eval_batch.detach().numpy()
+
+    if normalize:
+        min, max = np.percentile(z_np, [0.5,99.5])
+        z_np = np.where(z_np >= min, z_np, min)
+        z_np = np.where(z_np <= max, z_np, max)
+
+    if not 'color' in kwargs:
+        kwargs['c'] = z_np
+    fig = plt.scatter(x_np[:,0], x_np[:,1], **kwargs)
+    plt.xlabel('X',fontsize=18)
+    plt.ylabel('Y',fontsize=18)
+    plt.tick_params(labelsize=16)
+    plt.xlim(xlim[0],xlim[1])
+    if not text == None:
+        anchored_text = AnchoredText(text, loc=text_loc, prop=dict(size=16))
+        ax = plt.gca()
+        ax.add_artist(anchored_text)
+        plt.tight_layout()
+    return fig

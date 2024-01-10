@@ -43,9 +43,13 @@ class ResNet(nn.Module):
         self.model = self.build_model()
 
     def encode(self, x, c):
+        if c is None:
+            return self.model.encoder(x)
         return self.model.encoder(torch.cat([x, c], -1))
 
     def decode(self, z, c):
+        if c is None:
+            return self.model.decoder(z)[..., :self.hparams.data_dim]
         return self.model.decoder(torch.cat([z, c], -1))[..., :self.hparams.data_dim]
 
     def build_model(self) -> nn.Module:
