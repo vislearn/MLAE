@@ -6,7 +6,7 @@ scikit-learn
 tqdm
 pandas
 h5py
-pytorch
+torch
 torchvision
 torchmetrics
 git+https://github.com/LarsKue/lightning-trainable.git#lightning_trainable
