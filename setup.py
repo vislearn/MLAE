@@ -4,7 +4,6 @@ setup(
     name='mlae',
     description='Maximum Likelihood Autoencoder',
     version='0.1dev',
-    python_requires='>=3.6, <=3.10',
     packages=find_packages(exclude=['tests']),
     license='MIT',
     author='Felix Draxler, Peter Sorrenson',
